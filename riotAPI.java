@@ -6,7 +6,6 @@ import org.json.simple.JSONArray;
 
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -14,36 +13,37 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import org.json.JSONException;
 
-import java.net.URL;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
 
 public class riotAPI {
+    static final String apiKey = "RGAPI-52710572-6a4d-463a-b219-b115d165f908";
     static final String INVALID = "INVALID";
 
-    // default values for summoner "The Cookie"
+    // default values for summoner "The Cookie" aka me
     static String summonerName = "The Cookie";
     static String id = "d76UQLIqu29Dtttzb2pok2AvuCwlW-c9MItnJIXmB9y10NA";
     static String accountId = "QmoykMWsH81Q3lASwZKS2N8HnN_pDCrVWvk0zxOex3cbug";
+    static String server = "na1";
     static int profileIconId = 4225;
     static int summonerLevel = 179;
 
     // constructor
     // pre: receives a String (summoner name)
     //      receives a String (server, see https://developer.riotgames.com/regional-endpoints.html)
-    public riotAPI(String name, String server) throws IOException, JSONException{
+    public riotAPI(String name, String paramServer) throws IOException, JSONException{
         String urlHttp = "https://";
         String urlBody = ".api.riotgames.com/lol/summoner/v4/summoners/by-name/";
         String urlApiKey = "?api_key=";
-        String apiKey = "RGAPI-d93e18d1-f6bd-4da9-a327-1ed0c4accb72";
 
         // removes all whitespace in summoner name before adding it to apiURL
         String summName = name.replaceAll("\\s","");
 
         // final URL
-        String apiURL = urlHttp + server + urlBody + summName + urlApiKey + apiKey;
+        String apiURL = urlHttp + paramServer + urlBody + summName + urlApiKey + apiKey;
 
         JSONObject jsonInfo = readJsonFromUrl(apiURL);
 
@@ -55,6 +55,7 @@ public class riotAPI {
         accountId = jsonInfo.get("accountId").toString();
         profileIconId = (int) jsonInfo.get("profileIconId");
         summonerLevel = (int) jsonInfo.get("summonerLevel");
+        server = paramServer;
     }
 
     // Public method
@@ -392,7 +393,6 @@ public class riotAPI {
     public static int ObtainSummonerLevel(String summonerName) throws IOException, JSONException{
         String url = "https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/";
         String url2 = "?api_key=";
-        String apiKey = "RGAPI-d93e18d1-f6bd-4da9-a327-1ed0c4accb72";
 
         // removes all whitespace in summoner name before adding it to apiURL
         summonerName = summonerName.replaceAll("\\s","");
@@ -406,6 +406,77 @@ public class riotAPI {
         // System.out.println(jsonInfo.toString());
 
         return (int) jsonInfo.get("summonerLevel");
+    }
+
+    // public GetTotalGames()
+    // pre: none
+    // post: returns an int (total # of games played)
+    public static int GetTotalGames() throws IOException, JSONException{
+        String urlHttp = "https://";
+        String urlBody = ".api.riotgames.com/lol/match/v4/matchlists/by-account/"; // followed by {encryptedAccountId}
+        String urlApiKey = "?beginIndex=9999999&api_key=";
+        String summName = summonerName.replaceAll("\\s","");
+
+        String apiURL = urlHttp + server + urlBody + accountId + urlApiKey + apiKey;
+
+        JSONObject totalGames = readJsonFromUrl(apiURL);
+
+        return (int) totalGames.get("totalGames");
+    }
+
+    // Map<CharSequence, Integer>
+    public static void GamesPerChampion() throws IOException, JSONException{
+        int totalGames = GetTotalGames();
+
+        // index of games to be access during each api call
+        int beginIndex = 0;
+        int endIndex = 100;
+
+        String urlHttp = "https://";
+        String urlBody = ".api.riotgames.com/lol/match/v4/matchlists/by-account/";
+        String urlEndInd = "?endIndex=";
+        String urlBegInd = "&beginIndex=";
+        String urlApiKey = "&api_key=";
+
+        // this for loop determines the # of times we iterate through match history (each time checks 100 games)
+        // ex. if playerA has played 2402 games, then it will run 25 times (last iteration will get the last 2 matches)
+
+        // TODO: Convert championID to the champion String,
+        //       append champion String to an array,
+        //       then after both loops are done, use Counter.of(array) to get a dictionary of values.
+        //       Make sure to uncomment out the for loop.
+        // for (int iteration = 0; iteration < (int) (totalGames / 100) + 1; ++iteration) {
+            String apiURL = urlHttp + server + urlBody + accountId + urlEndInd + Integer.toString(endIndex) + urlBegInd
+                            + Integer.toString(beginIndex) + urlApiKey + apiKey;
+
+            JSONObject oneHundredGamesJSON = readJsonFromUrl(apiURL);
+
+            org.json.JSONArray oneHundredGamesMatches = (org.json.JSONArray) oneHundredGamesJSON.get("matches");
+
+            for (int match = 0; match < 100; ++match){
+                // figured this line using: https://www.programcreek.com/java-api-examples/org.json.JSONArray
+                // found in ex. 20
+                JSONObject oneMatchJSON = oneHundredGamesMatches.getJSONObject(match);
+                int championID = (int) oneMatchJSON.get("champion");
+
+                System.out.println(championID);
+            }
+
+            // System.out.println(oneHundredGamesMatches);
+
+//            System.out.println(oneHundredGamesJSON);
+//            System.out.println(totalGames);
+        //}
+
+    }
+
+    public static void TestCounter() throws IOException, JSONException{
+        Map<CharSequence, Integer> count;
+        String[] array1 = new String[]{"d", "sfds", "sfds", "s", "s", "q"};
+
+        count = Counter.of(array1);
+
+        System.out.println(count);
     }
 
 
