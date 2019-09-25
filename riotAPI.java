@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class riotAPI {
-    public static final String apiKey = "RGAPI-52710572-6a4d-463a-b219-b115d165f908";
+    public static final String apiKey = "<insert api key here>";
     private static final String INVALID = "INVALID";
 
     // default values for summoner "The Cookie" aka me
