@@ -23,8 +23,18 @@ import java.util.Map;
 // used when sorting Map into descending order
 import java.util.stream.Collectors;
 
+// API documentation - https://developer.riotgames.com/apis
+// Game constants    - https://developer.riotgames.com/game-constants.html
+
+// ideas - avg game length by queue, season, and/or champion
+//       - % win with first dragon, first baron, and rift herald in ranked and by season (although not enough data)
+//       - % win with X # of dragons and X # of barons in ranked and by season
+//       - % win when team gets first blood in ranked and by season
+//       - % win based on game length. i.e. 50% wr 15-20 min, 60% wr 20-25 min, 35% wr 25-30 min
+//       -
+
 public class riotAPI {
-    public static final String apiKey = "<insert api key here>";
+    public static final String apiKey = "RGAPI-757467f9-2640-48bb-8e46-51088059839e";
     private static final String INVALID = "INVALID";
 
     // default values for summoner "The Cookie" aka me
@@ -499,6 +509,37 @@ public class riotAPI {
 
         return sortedChampCounters;
         }
+
+    // public AvgGameLengthBy_Queue_Season()
+    // pre: int (queue ID), int (season ID) (check game constants, source at very top of code)
+    // post: returns an int (avg game length in seconds)
+    public static int AvgGameLengthBy_Queue_Season(int queueID, int seasonID){
+        // initialize the index of games to be accessed during each API call
+        int beginIndex = 0;
+        int endIndex = 100;
+
+        // TODO: Find total games, use for loop, create json objects for each match (like normal), but then you also
+        //       have to test whether there is even a match in the first place. Test something like
+        //       match.length (sometimes along the lines of that)
+
+
+        // https://na1.api.riotgames.com/lol/match/v4/matchlists/by-account/QmoykMWsH81Q3lASwZKS2N8HnN_pDCrVWvk0zxOex3cbug?queue=420&season=13&endIndex=300&beginIndex=200&api_key=RGAPI-757467f9-2640-48bb-8e46-51088059839e
+        // find the games that match the season and queue parameters
+        String urlHttp = "https://";
+        String urlBody = ".api.riotgames.com/lol/match/v4/matchlists/by-account/";
+        String urlQueue = "?queue=" + Integer.toString(queueID) + "&";
+        String urlSeason = "season=" + Integer.toString(seasonID) + "&";
+        String urlEndInd = "endIndex=";
+        String urlBegInd = "&beginIndex=";
+        String urlApiKey = "&api_key=";
+
+        String apiURL = urlHttp + server + urlBody + accountId + urlQueue + Integer.toString(queueID) +
+                        urlSeason + Integer.toString(seasonID) + urlEndInd + Integer.toString(endIndex) + urlBegInd +
+                        Integer.toString(beginIndex) + urlApiKey + apiKey;
+
+        return 0;
+        }
+
 
     }
 
