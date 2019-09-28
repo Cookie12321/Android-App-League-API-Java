@@ -1,5 +1,5 @@
 // Albert Le
-// last update 9/24/19
+// last update 9/28/19
 
 import java.io.IOException;
 import java.io.BufferedReader;
@@ -26,16 +26,10 @@ import java.util.stream.Collectors;
 // API documentation - https://developer.riotgames.com/apis
 // Game constants    - https://developer.riotgames.com/game-constants.html
 
-// ideas - avg game length by queue, season, and/or champion
-//       - % win with first dragon, first baron, and rift herald in ranked and by season (although not enough data)
-//       - % win with X # of dragons and X # of barons in ranked and by season
-//       - % win when team gets first blood in ranked and by season
-//       - % win based on game length. i.e. 50% wr 15-20 min, 60% wr 20-25 min, 35% wr 25-30 min
-//       -
-
 public class riotAPI {
-    public static final String apiKey = "<insert api key here>";
+    public static final String apiKey = "RGAPI-757467f9-2640-48bb-8e46-51088059839e";
     private static final String INVALID = "INVALID";
+    public static boolean foundSummoner = true;
 
     // default values for summoner "The Cookie" aka me
     private static String summonerName = "The Cookie";
@@ -60,14 +54,20 @@ public class riotAPI {
         // final URL
         String apiURL = urlHttp + paramServer + urlBody + summName + urlApiKey + apiKey;
 
-        JSONObject jsonInfo = readJsonFromUrl(apiURL);
+        try{
+            JSONObject jsonInfo = readJsonFromUrl(apiURL);
 
-        summonerName = name;
-        id = jsonInfo.get("id").toString();
-        accountId = jsonInfo.get("accountId").toString();
-        profileIconId = (int) jsonInfo.get("profileIconId");
-        summonerLevel = (int) jsonInfo.get("summonerLevel");
-        server = paramServer;
+            summonerName = name;
+            id = jsonInfo.get("id").toString();
+            accountId = jsonInfo.get("accountId").toString();
+            profileIconId = (int) jsonInfo.get("profileIconId");
+            summonerLevel = (int) jsonInfo.get("summonerLevel");
+            server = paramServer;
+        }
+        catch (Exception e) {
+            foundSummoner = false;
+            System.out.println("couldn't find summoner name");
+        }
     }
 
     // Private GetChampionFromID()
