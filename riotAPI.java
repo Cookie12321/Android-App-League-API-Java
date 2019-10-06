@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 // Game constants    - https://developer.riotgames.com/game-constants.html
 
 public class riotAPI {
-    public static final String apiKey = "<insert api key here>";
+    public static final String apiKey = "RGAPI-59849dc1-5ed4-4d8e-ae62-94a708e0aeb2";
     private static final String INVALID = "INVALID";
     public static boolean foundSummoner = true;
 
@@ -513,15 +513,24 @@ public class riotAPI {
     // public AvgGameLengthBy_Queue_Season()
     // pre: int (queue ID), int (season ID) (check game constants, source at very top of code)
     // post: returns an int (avg game length in seconds)
-    public static int AvgGameLengthBy_Queue_Season(int queueID, int seasonID){
+    public static int AvgGameLengthBy_Queue_Season(int queueID, int seasonID) throws IOException, JSONException{
+        // total games played ever
+        int totalGames = GetTotalGames();
+
+        Long gameID;
+
+        // gameList will contain the game ID's of every game related to the queue and season
+        ArrayList<Long> gameList = new ArrayList<Long>();
+
         // initialize the index of games to be accessed during each API call
         int beginIndex = 0;
         int endIndex = 100;
 
-        // TODO: Find total games, use for loop, create json objects for each match (like normal), but then you also
-        //       have to test whether there is even a match in the first place. Test something like
-        //       match.length (sometimes along the lines of that)
+        // TODO: Use gameList (of game ID's) to access the game ID matchV4 API URL, and get game length for each game
 
+        /*
+                PART 1: Obtaining an ArrayList of Game ID's that match the queue and season
+         */
 
         // https://na1.api.riotgames.com/lol/match/v4/matchlists/by-account/QmoykMWsH81Q3lASwZKS2N8HnN_pDCrVWvk0zxOex3cbug?queue=420&season=13&endIndex=300&beginIndex=200&api_key=RGAPI-757467f9-2640-48bb-8e46-51088059839e
         // find the games that match the season and queue parameters
@@ -533,15 +542,55 @@ public class riotAPI {
         String urlBegInd = "&beginIndex=";
         String urlApiKey = "&api_key=";
 
-        String apiURL = urlHttp + server + urlBody + accountId + urlQueue + Integer.toString(queueID) +
-                        urlSeason + Integer.toString(seasonID) + urlEndInd + Integer.toString(endIndex) + urlBegInd +
-                        Integer.toString(beginIndex) + urlApiKey + apiKey;
 
-        return 0;
+        // this for loop determines the # of times we iterate through match history (each loop run checks 100 games)
+        // ex. if playerA has played 2402 games, then it will run 25 times (last iteration will get the last 2 matches)
+        for (int iteration = 0; iteration < (int) (totalGames / 100) + 1; ++iteration) {
+            String apiURL = urlHttp + server + urlBody + accountId + urlQueue + Integer.toString(queueID) +
+                    urlSeason + Integer.toString(seasonID) + urlEndInd + Integer.toString(endIndex) + urlBegInd +
+                    Integer.toString(beginIndex) + urlApiKey + apiKey;
+
+            JSONObject oneHundredGamesJSON = readJsonFromUrl(apiURL);
+            org.json.JSONArray oneHundredGamesMatches = (org.json.JSONArray) oneHundredGamesJSON.get("matches");
+
+            for (int match = 0; match < oneHundredGamesMatches.length(); ++match) {
+                // figured this line using: https://www.programcreek.com/java-api-examples/org.json.JSONArray
+                // found in ex. 20
+                JSONObject oneMatchJSON = oneHundredGamesMatches.getJSONObject(match);
+
+                if (((int) oneMatchJSON.get("queue")) == queueID && ((int) oneMatchJSON.get("season") == seasonID)) {
+                    gameID = (Long) oneMatchJSON.get("gameId");
+                    gameList.add(gameID);
+                }
+            }
+
+            // updating set of games
+            beginIndex += 100;
+            endIndex += 100;
         }
 
+        System.out.println(gameList.get(0));
+        System.out.println(gameList.get(100));
+        System.out.println(gameList.get(200));
 
+        /*
+                END PART 1
+        */
+
+        // TODO: To be continued
+        // total games of that queue and season
+        int gameCount = gameList.size();
+        int totalGameLength = 0;
+
+        System.out.println(gameCount);
+
+
+
+        return 0;
     }
+
+
+}
 
 
 
