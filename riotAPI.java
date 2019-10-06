@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 // Game constants    - https://developer.riotgames.com/game-constants.html
 
 public class riotAPI {
-    public static final String apiKey = "RGAPI-59849dc1-5ed4-4d8e-ae62-94a708e0aeb2";
+    public static final String apiKey = "<insert api key here>";
     private static final String INVALID = "INVALID";
     public static boolean foundSummoner = true;
 
